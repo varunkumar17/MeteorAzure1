@@ -2,7 +2,7 @@
 
 # ----------------------
 # Meteor Azure
-# Version: 1.4.3
+# Version: 1.4.5
 # ----------------------
 
 # ----------------------
@@ -59,7 +59,7 @@ fi
 
 # Prepare cache directory
 if [[ -v METEOR_AZURE_NOCACHE && -d D:/home/meteor-azure ]]; then
-  echo "meteor-azure: Clearing cache"
+  echo meteor-azure: Clearing cache
   rm -rf D:/home/meteor-azure
 fi
 if [ ! -d D:/home/meteor-azure ]; then
@@ -137,12 +137,16 @@ npm prune --production
 npm install --production
 
 # Generate Meteor build
-echo meteor-azure: Building app
 if [ -d "$DEPLOYMENT_TEMP\bundle" ]; then
   echo meteor-azure: Cleaning build directory
   rm -rf "$DEPLOYMENT_TEMP\bundle"
 fi
+echo meteor-azure: Building app
 cmd //c meteor build "%DEPLOYMENT_TEMP%" --directory --server-only
+if [ ! -e "$DEPLOYMENT_TEMP\bundle\programs\server\package.json" ]; then
+  echo "meteor-azure: ERROR! Could not generate Meteor bundle"
+  exit 1
+fi
 cp "$DEPLOYMENT_SOURCE\.config\azure\web.config" "$DEPLOYMENT_TEMP\bundle"
 
 # Set Node runtime
@@ -162,7 +166,7 @@ cmd //c rename temp-package.json package.json
 
 # Sync bundle
 echo meteor-azure: Deploying bundle
-robocopy "$DEPLOYMENT_TEMP\bundle" $DEPLOYMENT_TARGET //mt:16 //mir //nfl //ndl //njh //njs //nc //ns //np > /dev/null
+robocopy "$DEPLOYMENT_TEMP\bundle" $DEPLOYMENT_TARGET //mt //mir //nfl //ndl //njh //njs //nc //ns //np > /dev/null
 
 # Install Meteor server
 echo meteor-azure: Installing Meteor server
